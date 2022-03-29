@@ -72,4 +72,5 @@ then
 fi
 
 # Copy keepchangelog script
-cp -rf .git-semver/plugins/keepachangelog.sh ${HOME}/.git-semver/plugins/
+mkdir -p ${HOME}/.git-semver/plugins/
+cp .git-semver/plugins/keepachangelog.sh ${HOME}/.git-semver/plugins/
