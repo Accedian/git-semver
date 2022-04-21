@@ -258,7 +258,7 @@ DIR_ROOT="$(git rev-parse --show-toplevel 2> /dev/null)"
 GIT_HASH="$(git rev-parse HEAD 2> /dev/null)"
 GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2> /dev/null)"
 
-if [ $GIT_BRANCH != master ]; then
+if [[ $GIT_BRANCH != master && $GIT_BRANCH != main ]]; then
   TAG_LIST_OPT="--merged $GIT_BRANCH"
 fi
 
