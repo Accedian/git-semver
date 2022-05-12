@@ -70,3 +70,7 @@ if [ ! -f "${FILE_CONF_DEST}" ]
 then
     cp "${FILE_CONF_SRC}" "${FILE_CONF_DEST}"
 fi
+
+# Copy keepchangelog script
+mkdir -p ${HOME}/.git-semver/plugins/
+cp .git-semver/plugins/keepachangelog.sh ${HOME}/.git-semver/plugins/
