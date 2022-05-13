@@ -5,7 +5,7 @@
 
 usage() {
 	cat <<-EOF
-		Usage: $(basename-git "$0") [command]
+		Usage: $(basename-git "$0") [command] [dryrun]
 
 		This script automates semantic versioning. Requires a valid change log at CHANGELOG.md.
 
@@ -19,6 +19,8 @@ usage() {
 		 pre-release [--dryrun] -p <pre-release> [-b <build>]  Generates a tag for a pre-release version and echos to the screen
 		 build [--dryrun] -b <build>                           Generates a tag for a build and echos to the screen
 		 help                                                  This message
+
+		 dryrun     only returns next version. Don't actually tag the repository
 
 	EOF
 	exit
@@ -170,47 +172,19 @@ version-parse-pre-release() {
 }
 
 version-get() {
-    local sort_args version version_pre_releases pre_release_id_count pre_release_id_index
-    local tags=$(git tag $TAG_LIST_OPT)
-    local version_pre_release=$(
-        local version_main=$(
-            echo "$tags" |
-                grep "^${VERSION_PREFIX}[0-9]\+\.[0-9]\+\.[0-9]\+" |
-                awk -F '[-+]' '{ print $1 }' |
-                uniq |
-                sort -t '.' -k 1,1n -k 2,2n -k 3,3n |
-                tail -n 1
-        )
-        local version_pre_releases=$(
-            echo "$tags" |
-                grep "^${version_main//./\\.}" |
-                awk -F '-' '{ print $2 }'
-        )
-        local pre_release_id_count=$(
-            echo "$version_pre_releases" | tr -d -c ".\n" |
-                awk 'BEGIN{ max = 0 }
-                { if (max < length) { max = length } }
-                END{ if ( max == 0 ) { print 0 } else { print max + 1 } }'
-        )
-        local sort_args='-t.'
-        for ((pre_release_id_index=1; pre_release_id_index<=$pre_release_id_count; pre_release_id_index++))
-        do
-            chars="$(echo "$version_pre_releases" | awk -F '.' '{ print $'$pre_release_id_index' }' | tr -d $'\n')"
-            if [[ "$chars" =~ ^[0-9]*$ ]]
-            then
-                sort_key_type=n
-            else
-                sort_key_type=
-            fi
-            sort_args="$sort_args -k$pre_release_id_index,$pre_release_id_index$sort_key_type"
-        done
-        echo "$version_pre_releases" |
-            eval sort $sort_args |
-            awk '{ if (length == 0) { print "'$version_main'" } else { print "'$version_main'-"$1 } }' |
-            tail -n 1
-    )
-    # Get the version with the build number
-    version=$(echo "$tags" | grep "^${version_pre_release//./\\.}" | tail -n 1)
+
+    # shellcheck disable=SC2155
+    local version=""
+
+    if [[ $GIT_BRANCH = "release/"* ]]; then
+      if [[ ! -f current-version ]]; then
+        echo "Cannot find current-version at the root of this repository. Please create a file with the proper semver version and re-execute this command"
+        exit -1
+      fi
+        local version=$(cat current-version | grep "^${VERSION_PREFIX}[0-9]\+\.[0-9]\+\.[0-9]\+$" | sed "s/^${VERSION_PREFIX}//" | sort -t. -k 1,1n -k 2,2n -k 3,3n | tail -1)
+      else
+        local version=$(git tag $TAG_LIST_OPT| grep "^${VERSION_PREFIX}[0-9]\+\.[0-9]\+\.[0-9]\+$" | sed "s/^${VERSION_PREFIX}//" | sort -t. -k 1,1n -k 2,2n -k 3,3n | tail -1)
+    fi
     if [ "" == "${version}" ]
     then
         return 1
@@ -317,6 +291,10 @@ version-build() {
 version-do() {
     local new="$1"
     local version="$2"
+	if [[ $DRY_RUN == "true" ]]; then
+		echo $new
+		return 1
+	fi
     local sign="${GIT_SIGN:-0}"
     local cmd="git tag"
     if [ "$sign" == "1" ]
@@ -364,43 +342,17 @@ fi
 GIT_HASH="$(git rev-parse HEAD 2> /dev/null)"
 GIT_BRANCH="$(git rev-parse --abbrev-ref HEAD 2> /dev/null)"
 
-if [ $GIT_BRANCH != master ]; then
+if [[ $GIT_BRANCH != master && $GIT_BRANCH != main ]]; then
   TAG_LIST_OPT="--merged $GIT_BRANCH"
 fi
 
-# Parse args
-action=
-build=
-pre_release=
-dryrun=0
-while :
-do
-    case "$1" in
-        -d)
-            dryrun=1
-            ;;
-        --dryrun)
-            dryrun=1
-            ;;
-        -b)
-            build=$2
-            shift
-            validate-build "$build"
-            ;;
-        -p)
-            pre_release=$2
-            shift
-            validate-pre-release "$pre_release"
-            ;;
-        ?*)
-            action=$1
-            ;;
-        *)
-            break
-            ;;
-    esac
-    shift
-done
+DRY_RUN=""
+if [[ $2 == "dryrun" ]]; then
+	DRY_RUN=true
+fi
+
+# Set $1 to last argument.
+for _; do true; done
 
 case "$action" in
     get)
@@ -433,3 +385,5 @@ case "$action" in
         usage
         ;;
 esac
+
+

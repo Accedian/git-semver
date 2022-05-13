@@ -29,6 +29,7 @@ EOF
     fi
     cp /tmp/${file}  "${git_root}"/${file}
 
+
     git add ${file}
     #git commit --amend -m "[skip ci] Reving to ${version_new} - $(git log -1 --pretty=%B)"
     git commit -m "[skip ci] Reving to ${version_new} - $(git log -1 --pretty=%B)"
@@ -45,7 +46,6 @@ case "${1}" in
         echo -n "Check ${file} has been updated."
         ;;
     * )
-	
         addCurrentRelease "$@"
         ;;
 esac
