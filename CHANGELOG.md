@@ -1,3 +1,7 @@
+## Current Release
+### 3.1.0
+**Release Date:** Fri Dec 20 16:23:52 UTC 2024
+## Previous Releases
 # Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
@@ -104,3 +108,4 @@ This file uses change log convention from [Keep a CHANGELOG](http://keepachangel
 [1.1.0]: https://github.com/markchalloner/git-semver/compare/1.0.2...1.1.0
 [1.0.2]: https://github.com/markchalloner/git-semver/compare/1.0.1...1.0.2
 [1.0.1]: https://github.com/markchalloner/git-semver/compare/1.0.0...1.0.1
+
