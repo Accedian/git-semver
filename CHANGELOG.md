@@ -2,6 +2,8 @@
 ### 3.1.0
 **Release Date:** Fri Dec 20 16:23:52 UTC 2024
 ## Previous Releases
+### 3.1.0
+**Release Date:** Fri Dec 20 16:23:52 UTC 2024
 # Change Log
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
