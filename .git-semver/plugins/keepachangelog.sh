@@ -12,6 +12,9 @@ function  addCurrentRelease() {
 
     if [ ! -f "${git_root}"/${file} ]; then
         tee <<- EOF >  /tmp/${file}
+### Add your new changelog entry above this line
+### dummy line to prevent git conflicts
+### dummy line to prevent git conflicts
 ## Current Release
 ### ${version_new}
 **Release Date:** ${release_date}
@@ -23,7 +26,7 @@ EOF
 ### ${version_new} 
 **Release Date:** ${release_date}     
 ## Previous Releases 
-$(cat "${git_root}"/${file} | sed -e '/## Current Release/d' | sed -e '/## Previous Releases/d')
+$(cat "${git_root}"/${file} | sed -e '/## Current Release/d' -e '/## Previous Releases/d' -e '/### Add your new changelog entry above this line/d' -e '/### dummy line to prevent git conflicts/d')
 
 EOF
     fi
